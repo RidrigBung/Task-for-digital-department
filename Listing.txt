@@ -1,0 +1,151 @@
+# Возможно будет удобнее открыть проект в Git:
+# https://github.com/RidrigBung/task0
+
+
+
+# main.py
+from flask import Flask, render_template, url_for
+from functions import get_today_date, get_tomorrow_date
+app = Flask(__name__)
+
+title = "Simple flask app"
+pages = {"index": "Main page", "today": "Today's data",
+         "tomorrow": "Tomorrow's data"}
+
+
+@app.route('/')
+def index():
+    return render_template("index.html", title=title, pages=pages)
+
+
+@app.route('/today')
+def today():
+    date_today = get_today_date()
+    return render_template("today.html", title=title, date_today=date_today)
+
+
+@app.route('/tomorrow')
+def tomorrow():
+    date_tomorrow = get_tomorrow_date()
+    return render_template("tomorrow.html", title=title, date_tomorrow=date_tomorrow)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+# functions.py
+from datetime import datetime
+
+
+# Соответсвие месяца и количества дней в нём
+months = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30,
+          7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
+
+
+def get_today_date() -> str:
+    today_date = datetime.today().strftime('%d.%m.%Y')
+    return today_date
+
+
+def get_tomorrow_date() -> str:
+    today_datetime = datetime.today()
+    year = today_datetime.year
+    month = today_datetime.month
+    day = today_datetime.day
+    # Проверка дополнительного дня в високосном году
+    if month == 2 and year % 4 == 0:
+        if day == 29:
+            month += 1
+            day = 1
+        else:
+            day += 1
+
+    elif months[month] == day:
+        if month == 12:
+            year += 1
+            month = 1
+        else:
+            month += 1
+        day = 1
+    else:
+        day += 1
+    tomorrow_date = str(day) + '.' + str(month) + '.' + str(year)
+    return tomorrow_date
+
+
+
+# static/styles/styles.css
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: sans-serif;
+  font-style: italic;
+}
+
+
+
+# templates/index.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../static/styles/styles.css" />
+    <title>{{ title }}</title>
+  </head>
+  <body>
+    <h1>Main page</h1>
+    <p>
+      <a href="{{ url_for('today') }}">Get today's date</a>
+    </p>
+    <p>
+      <a href="{{ url_for('tomorrow') }}">Get tomorrow's date</a>
+    </p>
+  </body>
+</html>
+
+
+
+# templates/today.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../static/styles/styles.css" />
+    <title>{{ title }}</title>
+    <style>
+      h1 {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Today's date is {{ date_today }}</h1>
+  </body>
+</html>
+
+
+
+# template/tomorrow.html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../static/styles/styles.css" />
+    <title>{{ title }}</title>
+    <style>
+      h1 {
+        color: blue;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Tomorrow's date is {{ date_tomorrow }}</h1>
+  </body>
+</html>
